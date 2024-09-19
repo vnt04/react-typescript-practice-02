@@ -21,7 +21,7 @@ export default function Login() {
     axios
       .post("http://localhost:8000/api/auth/login", loginFormData)
       .then((response) => {
-        localStorage.setItem("token", response.data.access_token);
+        sessionStorage.setItem("token", response.data.access_token);
         window.location.href = "/";
       })
       .catch((error) => console.log(error));

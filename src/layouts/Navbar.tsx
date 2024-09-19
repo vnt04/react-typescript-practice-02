@@ -1,10 +1,34 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import CustomDropDown from "../components/CustomDropdown";
 
 function Navbar() {
   const [userName, setUserName] = useState<string>("");
-  const access_token = localStorage.getItem("token");
+  const access_token = sessionStorage.getItem("token");
+  const handleLogout = () => {
+    sessionStorage.removeItem("token");
+    window.location.href = "/";
+  };
+  const navigate = useNavigate();
+  const myProfile = [
+    {
+      name: "Profile",
+      action: () => {
+        navigate("/profile");
+      },
+    },
+    {
+      name: "Reset password",
+      action: () => {
+        navigate("#");
+      },
+    },
+    {
+      name: "Logout",
+      action: handleLogout,
+    },
+  ];
   useEffect(() => {
     if (access_token) {
       axios
@@ -19,7 +43,7 @@ function Navbar() {
         })
         .catch((error) => console.log(error));
     }
-  });
+  }, [access_token]);
   return (
     <>
       <header className="py-8 flex items-center justify-between px-20 bg-gray-300">
@@ -32,13 +56,13 @@ function Navbar() {
             <Link to={"/create-news"}>Post a news</Link>
           </div>
         </div>
-        <Link to={"/login"} className="underline">
+        <div className="underline">
           {access_token === null ? (
-            <span>Login/Register</span>
+            <Link to={"/login"}>Login/Register</Link>
           ) : (
-            <span>{userName}</span>
+            <CustomDropDown title={userName} list={myProfile} />
           )}
-        </Link>
+        </div>
       </header>
     </>
   );
