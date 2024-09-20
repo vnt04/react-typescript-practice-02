@@ -1,5 +1,7 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { isAuthenticated } from "../utils/helper";
+import { useNavigate } from "react-router-dom";
 
 type LoginFormData = {
   email: string;
@@ -10,7 +12,12 @@ export default function Login() {
     email: "",
     password: "",
   });
-
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/");
+    }
+  });
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setLoginFormData({ ...loginFormData, [name]: value });
@@ -21,10 +28,22 @@ export default function Login() {
     axios
       .post("http://localhost:8000/api/auth/login", loginFormData)
       .then((response) => {
-        sessionStorage.setItem("token", response.data.access_token);
+        const access_token = response.data.access_token;
+        if (access_token) {
+          sessionStorage.setItem("token", access_token);
+        }
         window.location.href = "/";
       })
-      .catch((error) => console.log(error));
+      .catch((error) => {
+        // maybe use a alternate library for ui notification
+        const errors = error.response.data.errors;
+        if (errors.email || errors.password) {
+          if (errors.email) alert(errors.email);
+          else alert(errors.password);
+        } else {
+          alert("Something went wrong! Please try again later.");
+        }
+      });
   };
   return (
     <>
